@@ -81,6 +81,13 @@ footer{text-align:center;color:var(--mute);font-size:.8rem;padding:10px 16px 30p
 .lgb b{color:var(--cream);font-size:1.1rem}
 .lgb input{background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:11px;font:inherit;direction:ltr;text-align:right}
 #le{color:#e07a6a;font-size:.82rem;min-height:1em}
+
+.item{align-items:center;gap:10px}
+.item .ph{flex:none;width:46px;height:46px;border-radius:50%;background:var(--bg2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.item .ph svg{width:28px;height:28px;stroke:var(--gold);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.item .ph img{width:100%;height:100%;object-fit:cover}
+.item.off .ph{opacity:.45}
+.item i{transform:none}
 </style>
 </head>
 <body>
@@ -108,6 +115,27 @@ var DATA=JSON.parse(document.getElementById("data").textContent);
 var fa=function(n){return Number(n).toLocaleString("fa-IR")};
 var tabs=document.getElementById("tabs"),box=document.getElementById("sections"),io=null;
 function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
+var IC={
+espresso:'<path d="M12 22h20v6a8 8 0 0 1-8 8h-4a8 8 0 0 1-8-8z"/><path d="M32 24h3a3 3 0 0 1 0 6h-3"/><path d="M9 40h26"/><path d="M18 8c-2 3 2 4 0 7M25 8c-2 3 2 4 0 7"/>',
+mug:'<path d="M10 18h22v14a6 6 0 0 1-6 6H16a6 6 0 0 1-6-6z"/><path d="M32 21h3a4 4 0 0 1 0 8h-3"/><path d="M16 7c-2 3 2 4 0 7M23 7c-2 3 2 4 0 7"/>',
+glass:'<path d="M13 12h22l-3 27H16z"/><path d="M15 21h18"/><path d="M27 5l-4 14"/><rect x="18" y="26" width="6" height="6" rx="1"/>',
+tea:'<path d="M15 16h18l-2 21a3 3 0 0 1-3 3h-8a3 3 0 0 1-3-3z"/><path d="M15 23h18"/><path d="M33 20h2a3 3 0 0 1 0 7h-2"/><path d="M20 6c-2 3 2 4 0 7M27 6c-2 3 2 4 0 7"/>',
+cake:'<path d="M8 40h32V26H8z"/><path d="M8 26c4 0 4 4 8 4s4-4 8-4 4 4 8 4 4-4 8-4"/><path d="M24 10v8M22 14h4"/>',
+pizza:'<path d="M6 13c10-6 26-6 36 0L24 42z"/><circle cx="20" cy="19" r="2"/><circle cx="28" cy="21" r="2"/><circle cx="24" cy="30" r="2"/>',
+plate:'<circle cx="24" cy="26" r="14"/><circle cx="24" cy="26" r="7"/><path d="M5 12v10M9 12v10M5 18h4"/>'};
+function kind(n){
+  if(/آیس|لیموناد|موهیتو/.test(n))return"glass";
+  if(/چای|دمنوش/.test(n))return"tea";
+  if(/اسپرسو|ترک/.test(n))return"espresso";
+  if(/آمریکانو|کاپوچینو|چاکلت|لته|موکا|نسکافه/.test(n))return"mug";
+  if(/کیک|کوکی/.test(n))return"cake";
+  if(/پیتزا/.test(n))return"pizza";
+  return"plate"}
+function thumb(x){
+  var s=el("span","ph");
+  if(x[3]){var im=el("img");im.src=x[3];im.alt="";im.loading="lazy";im.onerror=function(){s.innerHTML='<svg viewBox="0 0 48 48">'+IC[kind(x[0])]+'</svg>';};s.appendChild(im)}
+  else s.innerHTML='<svg viewBox="0 0 48 48">'+IC[kind(x[0])]+'</svg>';
+  return s}
 function render(){
   tabs.innerHTML="";box.innerHTML="";if(io)io.disconnect();
   io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){
@@ -121,7 +149,7 @@ function render(){
     var l=el("div","list");
     c.i.forEach(function(x){
       var d=el("div","item"+(x[2]?" off":""));
-      d.appendChild(el("span",null,x[0]));d.appendChild(el("i"));
+      d.appendChild(thumb(x));d.appendChild(el("span",null,x[0]));d.appendChild(el("i"));
       var p=el("em");
       if(x[2])p.textContent="ناموجود";
       else if(x[1]==null)p.textContent="—";
@@ -130,12 +158,15 @@ function render(){
     s.appendChild(l);box.appendChild(s);io.observe(s)});
 }
 render();
+fetch("menu.json?v="+Date.now()).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.length){DATA=d;render()}}).catch(function(){});
 var W=document.getElementById("welcome"),M=document.getElementById("menu");
 function show(m){W.hidden=m;M.hidden=!m;window.scrollTo(0,0)}
 document.getElementById("go").onclick=function(){show(true);try{history.replaceState(null,"","#menu")}catch(e){}};
 document.getElementById("back").onclick=function(){show(false)};
 if(location.hash==="#menu")show(true);
 
+var REPO="arenagmnet-design/arena-menu";
+function tok(){try{return localStorage.getItem("gh")||""}catch(e){return ""}}
 /* admin */
 var adm=document.getElementById("adm"),ovl=document.getElementById("ovl"),ovb=document.getElementById("ovbody"),st=document.getElementById("st"),draft=null;
 var HASH="8da193366e1554c08b2870c50f737b9587c3372b656151c4a96028af26f51334",lg=document.getElementById("lg"),lu=document.getElementById("lu"),lp=document.getElementById("lp"),le=document.getElementById("le");
@@ -151,6 +182,9 @@ function num(v){v=String(v).replace(/[۰-۹]/g,function(d){return d.charCodeAt(0
 function inp(v,ph,mode){var i=el("input");i.type="text";i.value=v==null?"":v;i.placeholder=ph;if(mode)i.inputMode=mode;return i}
 function form(){
   var y=ovl.scrollTop;ovb.innerHTML="";
+  var tb=el("div","cat");tb.appendChild(el("h3",null,"اتصال به GitHub"));
+  var tk=inp(tok(),"توکن GitHub");tk.id="tk";tk.type="password";tb.appendChild(tk);
+  tb.appendChild(el("p","note","توکن فقط روی همین گوشی ذخیره می‌شود."));ovb.appendChild(tb);
   draft.forEach(function(c){
     var b=el("div","cat");b.appendChild(el("h3",null,c.t));
     c.i.forEach(function(x,xi){
@@ -173,20 +207,24 @@ function openPanel(){draft=JSON.parse(JSON.stringify(DATA));st.textContent="";fo
 adm.onclick=function(){le.textContent="";lg.hidden=false;lu.focus()};
 if(location.hash==="#admin"){show(true);adm.onclick()}
 document.getElementById("cancel").onclick=function(){ovl.hidden=true};
+
+function fmt(d){return "[\n"+d.map(function(c){return '  {\n    "id": '+JSON.stringify(c.id)+',\n    "t": '+JSON.stringify(c.t)+',\n    "i": [\n'+c.i.map(function(x){var r=[x[0],x[1]==null?null:x[1],!!x[2]];if(x[3])r.push(x[3]);return "      "+JSON.stringify(r)}).join(",\n")+'\n    ]\n  }'}).join(",\n")+"\n]\n"}
 document.getElementById("save").onclick=async function(){
-  st.textContent="در حال ذخیره…";
-  var art=null;try{art=window.claude&&await claude.use("artifact")}catch(e){}
-  if(!art){st.textContent="ذخیره در این نمایش ممکن نیست";return}
+  var t=((document.getElementById("tk")||{}).value||"").trim();
+  if(!t){st.textContent="توکن GitHub را وارد کنید";return}
   draft.forEach(function(c){c.i=c.i.filter(function(x){return String(x[0]).trim()})});
-  DATA=draft;
-  var body=document.body.cloneNode(true);
-  body.querySelectorAll("script").forEach(function(s){s.remove()});
-  ["sections","tabs","ovbody"].forEach(function(id){body.querySelector("#"+id).innerHTML=""});
-  body.querySelector("#ovl").hidden=true;body.querySelector("#lg").hidden=true;
-  body.querySelector("#welcome").hidden=false;body.querySelector("#menu").hidden=true;
-  var json=JSON.stringify(DATA).replace(/</g,"\\u003c");
-  var html='<!DOCTYPE html>\n<html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>'+document.title+'</title><link rel="stylesheet" href="'+document.querySelector("link[rel=stylesheet]").href+'"><style id="base">'+document.getElementById("base").textContent+'</style></head><body>'+body.innerHTML+'<script type="application/json" id="data">'+json+'<\/script><script id="app">'+document.getElementById("app").textContent+'<\/script></body></html>';
-  try{await art.publish(html)}catch(e){st.textContent="ذخیره نشد؛ دوباره تلاش کنید";render()}
+  st.textContent="در حال ذخیره…";
+  var api="https://api.github.com/repos/"+REPO+"/contents/menu.json",H={"Authorization":"Bearer "+t,"Accept":"application/vnd.github+json"};
+  try{
+    var r=await fetch(api+"?ref=main",{headers:H,cache:"no-store"});
+    if(r.status===401||r.status===403){st.textContent="توکن نامعتبر است";return}
+    var body={message:"Update menu",branch:"main",content:btoa(unescape(encodeURIComponent(fmt(draft))))};
+    if(r.ok)body.sha=(await r.json()).sha;
+    var w=await fetch(api,{method:"PUT",headers:H,body:JSON.stringify(body)});
+    if(!w.ok){st.textContent="ذخیره نشد ("+w.status+")";return}
+    try{localStorage.setItem("gh",t)}catch(e){}
+    DATA=draft;render();st.textContent="ذخیره شد؛ تا ۲ دقیقه دیگر روی سایت اعمال می‌شود";
+  }catch(e){st.textContent="خطای اتصال؛ دوباره تلاش کنید"}
 };
 </script>
 </body>
